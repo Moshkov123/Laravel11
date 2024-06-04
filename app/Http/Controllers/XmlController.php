@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Category;
 use App\Models\Photo;
 use App\Models\Product;
+use App\Models\Product_Categorie;
 use App\Models\Xml;
 use Illuminate\Http\Request;
 use SimpleXMLElement;
@@ -50,6 +52,24 @@ class XmlController extends Controller
                 'options' => $options,
             ]);
             $product->save();
+
+            $categories = [];
+        for ($i = 0; $i < 4; $i++) {
+            $categoryName = (string) $offer->{'folder_' . $i};
+            if (!empty($categoryName)) {
+                $category = Category::firstOrCreate(['categorie' => $categoryName]);
+                $categories[] = $category->id;
+            }
+        }
+
+        // Save product-category relationships
+        foreach ($categories as $categoryId) {
+            $productCategory = new Product_Categorie([
+                'product_id' => $product->id,
+                'categorie_id' => $categoryId,
+            ]);
+            $productCategory->save();
+        }
 
             foreach ($images as $imageUrl) {
             $photo = new Photo(['photo' => $imageUrl,'product_id'=>$product->id ]);
