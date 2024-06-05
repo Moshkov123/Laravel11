@@ -136,7 +136,24 @@ class XmlController extends Controller
             $categories[] = $category;
         }
     }
+   
+     // Получение характеристик продукта
+     $productFeatures = Product_Feature::where('product_id', $product->id)->get();
     
-    return view('show', compact('product', 'photos', 'categories'));
+     $features = [];
+     foreach ($productFeatures as $productFeature) {
+         $feature = Feature::find($productFeature->feature_id);
+         
+         if ($feature) {
+             $description = Description::where('feature_id', $feature->id)->first();
+             
+             if ($description) {
+                 $features[] = ['name' => $feature->parameter, 'value' => $description->description];
+             }
+         }
+        
+     }
+
+     return view('show', compact('product', 'photos', 'categories', 'features'));
     }
 }

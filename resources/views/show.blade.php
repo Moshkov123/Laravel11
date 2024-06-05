@@ -26,6 +26,12 @@
         @foreach($photos as $photo)
             <img src="{{ $photo->photo }}" alt="Product Photo" class="mb-2">
         @endforeach
+
+        <!-- Display features -->
+        <h2 class="text-xl font-bold mb-2">Features</h2>
+        @foreach($features as $feature)
+            <p><strong>{{ $feature['name'] }}:</strong> {{ $feature['value'] }}</p>
+        @endforeach
     </div>
 </body>
 </html>
