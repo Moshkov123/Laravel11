@@ -15,6 +15,12 @@
         <p><strong>Price:</strong> {{ $product->price }}</p>
         <p><strong>Quantity:</strong> {{ $product->quantity }}</p>
 
+        <!-- Display categories -->
+        <h2 class="text-xl font-bold mb-2">Categories</h2>
+        @foreach($categories as $category)
+            <p>{{ $category->categorie }}</p>
+        @endforeach
+
         <!-- Display photos -->
         <h2 class="text-xl font-bold mb-2">Photos</h2>
         @foreach($photos as $photo)

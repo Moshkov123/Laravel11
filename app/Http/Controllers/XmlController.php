@@ -3,9 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\Category;
+use App\Models\Description;
+use App\Models\Feature;
 use App\Models\Photo;
 use App\Models\Product;
 use App\Models\Product_Categorie;
+use App\Models\Product_Feature;
 use App\Models\Xml;
 use Illuminate\Http\Request;
 use SimpleXMLElement;
@@ -25,6 +28,7 @@ class XmlController extends Controller
     
             $xml = new SimpleXMLElement($xmlContent);
             $offer = $xml->offers->offer;
+            
         
             // Extract data
             $artNumber = (string) $offer->art_number;
@@ -35,6 +39,11 @@ class XmlController extends Controller
             $quantity = (int) $offer->quantity;
             $complectation = (string) $offer->complectation;
             $options = (string) $offer->options;
+            $properties = $offer->properties->item;
+
+            
+        // Сохранение данных о свойствах продукта
+        
 
             $images = [];
             foreach ($offer->images->image as $image) {
@@ -54,13 +63,39 @@ class XmlController extends Controller
             $product->save();
 
             $categories = [];
-        for ($i = 0; $i < 4; $i++) {
-            $categoryName = (string) $offer->{'folder_' . $i};
-            if (!empty($categoryName)) {
-                $category = Category::firstOrCreate(['categorie' => $categoryName]);
-                $categories[] = $category->id;
+        foreach ($offer->children() as $element) {
+            if (strpos($element->getName(), 'folder_') === 0) {
+                $categoryName = (string) $element;
+                if (!empty($categoryName)) {
+                    $category = Category::firstOrCreate(['categorie' => $categoryName]);
+                    $categories[] = $category->id;
+                }
             }
         }
+
+
+        
+        foreach ($properties as $property) {
+            $name = (string) $property->name;
+            $value = (string) $property->value;
+
+            // Создание или получение существующего свойства
+            $feature = Feature::firstOrCreate(['parameter' => $name]);
+
+            $productFeature = new Product_Feature([
+                'product_id' => $product->id,
+                'feature_id' => $feature->id,
+            ]);
+            $productFeature->save();
+
+            // Сохранение описания свойства
+            $description = new Description([
+                'description' => $value,
+                'feature_id' => $feature->id
+            ]);
+            $description->save();
+        }
+        
 
         // Save product-category relationships
         foreach ($categories as $categoryId) {
@@ -80,19 +115,28 @@ class XmlController extends Controller
             $data = Product::where('art_number', $artNumber)->first();
             return response()->json($data);
         }
+       
+
     
         return back()->with('error', 'Failed to upload file');
     }
 
     public function show($id)
     {
-        // Find the product by its ID
-        $product = Product::findOrFail($id);
+    $product = Product::findOrFail($id);
+
+    $photos = $product->photo;
+
+    $productCategories = Product_Categorie::where('product_id', $product->id)->get();
+
+    $categories = [];
+    foreach ($productCategories as $productCategory) {
+        $category = Category::find($productCategory->categorie_id);
+        if ($category) {
+            $categories[] = $category;
+        }
+    }
     
-        // Retrieve all photos associated with the product
-        $photos = $product->photo;
-    
-        // Pass the product and its photos to the view
-        return view('show', compact('product', 'photos'));
+    return view('show', compact('product', 'photos', 'categories'));
     }
 }

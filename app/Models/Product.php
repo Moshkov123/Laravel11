@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Product extends Model
 {
     use HasFactory;
-    protected $fillable = ['art_number','mark','description','price','quantity'];
+    protected $fillable = ['art_number','mark','description','price','quantity','complectation','options'];
 
     public function Photo(): HasMany
     {
@@ -20,5 +20,9 @@ class Product extends Model
     public function Product_Categorie(): BelongsTo
     {
         return $this->belongsTo(Product_Categorie::class);
+    }
+    public function Product_Feature(): BelongsTo
+    {
+        return $this->belongsTo(Product_Feature::class);
     }
 }
