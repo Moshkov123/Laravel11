@@ -19,7 +19,38 @@ class XmlController extends Controller
         return view("forma");
     }
 
-    
+    public function main()
+{
+    $products = Product::with(['photo', 'productCategory', 'productFeature'])->get()->toArray();
+    $products2 = Feature::with(['Product_Feature'])->get()->toArray();
+
+    $mergedProducts = [];
+
+// Создаем ассоциативный массив из $products, где ключом будет id продукта
+$productsById = array_column($products, null, 'id');
+
+// Объединяем данные из $products2 с соответствующими данными из $products
+foreach ($products2 as $product2) {
+    $productId = $product2['id'];
+    if (isset($productsById[$productId])) {
+        // Если продукт с таким id есть в $products, объединяем данные
+        $mergedProducts[] = array_merge($productsById[$productId], $product2);
+    } else {
+        // Если продукта с таким id нет в $products, добавляем данные из $product2
+        $mergedProducts[] = $product2;
+    }
+}
+
+// Если в $products есть продукты, которых нет в $products2, добавляем их в $mergedProducts
+foreach ($productsById as $productId => $product) {
+    if (!isset($products2[$productId])) {
+        $mergedProducts[] = $product;
+    }
+}
+
+// Теперь $mergedProducts содержит объединенные данные
+    return response()->json(  $mergedProducts);
+}
     public function upload(Request $request)
     {
         if ($request->hasFile('xmlFile')) {
