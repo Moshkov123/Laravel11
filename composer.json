@@ -9,6 +9,7 @@
         "doctrine/dbal": "^3.8",
         "doctrine/orm": "^3.2",
         "laravel/framework": "^11.9",
+        "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.9",
         "league/flysystem": "^3.28",
         "tcg/voyager": "dev-test"

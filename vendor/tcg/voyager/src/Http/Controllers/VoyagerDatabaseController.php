@@ -176,23 +176,21 @@ class VoyagerDatabaseController extends Controller
                 return $db;
             }
     
-            // Get the columns
-            $db->columns = Schema::getColumnListing($tableName);
-    
-            // Set the form action for updating
+            $db->table = Schema::getColumnListing($tableName);
             $db->formAction = route('voyager.database.update', $tableName);
-    
-            // Set the table name
             $db->table = $tableName;
         } else {
-            // Create a new table schema using Blueprint
-            $tableSchema = function (Blueprint $table) {
-                $table->id();
-                $table->string('name');
-                $table->timestamps();
-            };
-    
-            // Set the form action for creating a new table
+            $db->table = new Table('New Table');
+
+            // Add prefilled columns
+            $db->table->addColumn('id', 'integer', [
+                'unsigned'      => true,
+                'notnull'       => true,
+                'autoincrement' => true,
+            ]);
+
+            $db->table->setPrimaryKey(['id'], 'primary');
+
             $db->formAction = route('voyager.database.store');
         }
     
@@ -202,7 +200,7 @@ class VoyagerDatabaseController extends Controller
         $db->identifierRegex = Identifier::REGEX;
         $db->platform = Schema::getConnection()->getDatabaseName();
         $db->tableJson = json_encode($oldTable);
-    
+        dd( $db);
         return $db;
     }
     
